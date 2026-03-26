@@ -50,6 +50,7 @@ public:
 	{
 		min += delta;
 		max += delta;
+		return *this;
 	}
 
 	inline vec3 center() const
