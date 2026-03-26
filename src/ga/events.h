@@ -54,6 +54,7 @@ struct TouchEvent : public Event
 	};
 
 	Type type;
+	int touchId = -1;   // unique per-finger ID from ofTouchEventArgs::id; -1 = untracked (mouse)
 	ga::vec2 position;  // window space
 	ga::vec2 size;
 	float angle;     // degrees 0-359

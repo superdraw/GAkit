@@ -42,6 +42,13 @@ public:
 			return;
 		}
 
+		// If this zone is owned by a different tracked finger, ignore the event.
+		// touchId == -1 means untracked (mouse) — always allowed for backward compat.
+		bool isTracked = ( touchEvt.touchId >= 0 );
+		bool isOwnedByOther = isTracked && ( m_activeTouchId >= 0 ) && ( m_activeTouchId != touchEvt.touchId );
+		if ( isOwnedByOther )
+			return;
+
 		auto node = getNode();
 		if ( !node )
 			return;
@@ -64,7 +71,8 @@ public:
 					if ( m_isCapturingTouch ) {
 						touchEvt.captured = true;
 					}
-					// tap on
+					// claim this touch
+					m_activeTouchId = touchEvt.touchId;
 					setState( State::ACTIVE );
 					event.type = TouchZone::Event::Type::PRESS;
 					onTouchEvent( event );
@@ -90,6 +98,7 @@ public:
 					// drag off of zone
 					if ( m_allowLosingFocus ) {
 						setState( State::INACTIVE );
+						m_activeTouchId = -1;
 					}
 					event.type = TouchZone::Event::Type::DRAG_OFF;
 					onTouchEvent( event );
@@ -104,20 +113,22 @@ public:
 						touchEvt.captured = true;
 					}
 					setState( State::INACTIVE );
+					m_activeTouchId = -1;
 					event.type = TouchZone::Event::Type::RELEASE;
 					onTouchEvent( event );
 				} else {
 					setState( State::INACTIVE );
+					m_activeTouchId = -1;
 				}
 				break;
 			}
 
 			case ga::TouchEvent::Type::CANCEL: {
-				// not sure how to handle this...
 				if ( m_isCapturingTouch ) {
 					touchEvt.captured = true;
 				}
 				setState( State::INACTIVE );
+				m_activeTouchId = -1;
 				break;
 			}
 		}
@@ -208,6 +219,7 @@ protected:
 	}
 
 	State m_state;
+	int m_activeTouchId                                        = -1;  // touch ID that owns this zone; -1 = none
 	ga::Connection m_touchConnection;
 	bool m_boundsInverted                                      = false;
 	bool m_isCapturingTouch                                    = true;
