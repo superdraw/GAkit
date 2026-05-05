@@ -46,6 +46,21 @@ public:
 	{
 		ofTrueTypeFont::texAtlas.setTextureMinMagFilter( minFilter, magFilter );
 	}
+
+	// generate or drop mipmaps on
+	// the atlas texture. When enabled, also pre-sets a mipmap-friendly min filter
+	// so subsequent draws can sample lower mip levels under downscale / rotation.
+	// Caller can override the filter afterwards via setAtlasFilter().
+	void setAtlasMipmap( bool enable )
+	{
+		if ( enable ) {
+			ofTrueTypeFont::texAtlas.enableMipmap();
+			ofTrueTypeFont::texAtlas.generateMipmap();
+			ofTrueTypeFont::texAtlas.setTextureMinMagFilter( GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR );
+		} else {
+			ofTrueTypeFont::texAtlas.disableMipmap();
+		}
+	}
 };
 
 inline bool load( Font& font, const ofTrueTypeFontSettings& settings )

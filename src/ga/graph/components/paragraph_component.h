@@ -74,6 +74,16 @@ public:
 	Paragraph& setFboCacheEnabled( bool enable );
 	bool getIsFboCacheEnabled() { return m_cacheToFbo; }
 
+	// manually re-mark layout dirty so
+	// the next draw() rebuilds the cached FBO with current state. Useful when toggling
+	// FBO cache, atlas filter, or mipmaps at runtime — the bake stays in sync with the
+	// new sampling state. 
+	Paragraph& forceLayoutDirty()
+	{
+		m_isLayoutDirty = true;
+		return *this;
+	}
+
 	void draw();
 
 	std::vector<ga::Rect> getWordBounds();
