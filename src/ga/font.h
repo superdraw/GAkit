@@ -31,6 +31,21 @@ public:
 	{
 		return getStringBoundingBox( str, 0, 0 );
 	}
+
+	// ────────────────────────────────────────────────────────────────────
+	// ofTrueTypeFont's atlas defaults to GL_NEAREST for any font ≤ 20 pt
+	// (see ofTrueTypeFont.cpp where the filter is selected by size). At
+	// small sizes, rotated glyph quads sampling a NEAREST atlas exhibit
+	// stair-step / "grunge" on the strokes. This accessor lets a caller
+	// opt into linear (or any other) filtering on a per-font basis.
+	//
+	// The default load() path is unchanged — callers must explicitly invoke
+	// setAtlasFilter() to deviate from oF's chosen filter.
+	// ────────────────────────────────────────────────────────────────────
+	void setAtlasFilter( GLenum minFilter, GLenum magFilter )
+	{
+		ofTrueTypeFont::texAtlas.setTextureMinMagFilter( minFilter, magFilter );
+	}
 };
 
 inline bool load( Font& font, const ofTrueTypeFontSettings& settings )
