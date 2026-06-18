@@ -82,14 +82,20 @@ public:
 
 			case ga::TouchEvent::Type::DRAG: {
 				if ( isInBounds ) {
-					if ( m_isCapturingTouch ) {
-						touchEvt.captured = true;
-					}
 					if ( getState() == State::ACTIVE ) {
+						// This zone OWNS the touch (it received the PRESS). Only the owner
+						// captures the drag, so no other zone — even one drawn on top of it
+						// after the press (e.g. a card raised by an autoflip, or another
+						// user's just-released card) — can steal the drag and freeze it.
+						if ( m_isCapturingTouch ) {
+							touchEvt.captured = true;
+						}
 						// dragged within bounds
 						event.type = TouchZone::Event::Type::DRAG_INSIDE;
 					} else {
-						// drag into zone
+						// Not the owner: report the drag entering (hover) but do NOT capture,
+						// so the owning zone still receives this drag even when it is drawn
+						// below this one.
 						// setState( State::ACTIVE );
 						event.type = TouchZone::Event::Type::DRAG_INTO;
 					}
