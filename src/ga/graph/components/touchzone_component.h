@@ -24,7 +24,9 @@ public:
 			RELEASE,
 			DRAG_INTO,
 			DRAG_INSIDE,
-			DRAG_OFF
+			DRAG_OFF,
+			CANCEL      // touch was cancelled (OS gesture / palm rejection) — NOT a release:
+			            // listeners should abort cleanly without firing tap/click actions
 		} type;
 
 		TouchZone* touchZone;   // source zone (this)
@@ -130,11 +132,19 @@ public:
 			}
 
 			case ga::TouchEvent::Type::CANCEL: {
-				if ( m_isCapturingTouch ) {
+				// Only the zone that OWNS this touch captures + is notified (same ownership
+				// rule as DRAG), so a zone drawn on top can't swallow the cancel and leave
+				// the real owner stuck mid-interaction.
+				bool wasActive = ( getState() == State::ACTIVE );
+				if ( wasActive && m_isCapturingTouch ) {
 					touchEvt.captured = true;
 				}
 				setState( State::INACTIVE );
 				m_activeTouchId = -1;
+				if ( wasActive ) {
+					event.type = TouchZone::Event::Type::CANCEL;
+					onTouchEvent( event );
+				}
 				break;
 			}
 		}
